@@ -116,9 +116,10 @@ typedef struct {
  *
  * @field select - set CS pin to low state
  * @field deselect - set CS pin to high state
- * @field is_busy - check the spi busy state
- * @filed write - write a data to the spi
- * @field read - read a data from the spi
+ * @field is_spi_busy - check the spi busy state
+ * @filed spi_write - write a data to the spi
+ * @field spi_read - read a data from the spi
+ * @field delay - hw delay, usec
  */
 typedef struct {
     void ( *select)(void);
