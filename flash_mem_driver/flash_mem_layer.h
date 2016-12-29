@@ -25,12 +25,12 @@
 
 
 /**
- * Public API macros.
+ * @brief Public API macros.
  *
  * @param fml - pointer to the "__fmem_layer" structure
  * @param d - pointer to the "__fmem_layer_data" structure
  */
-#define FMEM_ERASE(fml)          (fml)->erase(fml)
+#define FMEM_ERASE(fml)          (fml)->erase((fml))
 #define FMEM_READ(fml,d)         (fml)->read((fml),(d))
 #define FMEM_CHANGE(fml,d)       (fml)->change((fml),(d))
 #define FMEM_WRITE(fml,d)        (fml)->write((fml),(d))
@@ -49,7 +49,7 @@ typedef enum {
 
 
 /**
- * Determines a data what need to read or write.
+ * @brief Determines a data what need to read or write.
  *
  * @field addr - address in the virtual space <0 - MEM_VOLUME>.
  * @field len - length of data
@@ -63,7 +63,7 @@ typedef struct {
 
 
 /**
- * Describes an allocated block in the flash memory.
+ * @brief Describes an allocated block in the flash memory.
  *
  * @field START_ADDRESS - start address of allocated block in the flash memory,
  *                        should be aligned by sector size.
@@ -79,23 +79,30 @@ typedef struct {
 
 
 /**
- * Management structure.
- * Use API macros instead a straight calling.
+ * @brief Management structure.
+ *        Use API macros instead a straight calling.
  *
  */
-typedef struct {
+typedef struct __fmem_layer {
     const __fmem_layer_descriptor * descriptor;
 
     /**
      * interface
      */
-    __flash_mem_layer_status (* erase)(void * const);
-    __flash_mem_layer_status (* read)(void * const, const __fmem_layer_data * const);
-    __flash_mem_layer_status (* write)(void * const, const __fmem_layer_data * const);
-    __flash_mem_layer_status (* change)(void * const, const __fmem_layer_data * const);
+    __flash_mem_layer_status (* erase)(struct __fmem_layer * const);
+    __flash_mem_layer_status (* read)(struct __fmem_layer * const, const __fmem_layer_data * const);
+    __flash_mem_layer_status (* write)(struct __fmem_layer * const, const __fmem_layer_data * const);
+    __flash_mem_layer_status (* change)(struct __fmem_layer * const, const __fmem_layer_data * const);
 } __fmem_layer;
 
 
+/**
+ * @brief Performs an initialization of "__fmem_layer" structure.
+ *
+ * @param fml - pointer on "__fmem_layer" structure which need to initialize.
+ * @param descriptor - pointer on "__fmem_layer_descriptor" structure which describes
+ *                     allocated block of flash memory.
+ */
 void create_fmemlayer(__fmem_layer * const fml, const __fmem_layer_descriptor * const descriptor);
 
 

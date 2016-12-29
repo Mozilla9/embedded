@@ -23,77 +23,14 @@
 #define FMDR_CHECK_CHIP_WEL(s)       ((s)&0x02)
 
 
-/**
- * Turn off write memory protection.
- *
- * @param handle - pointer on management structure with low level API
- * @return status operation
- */
-static __flash_mem_op_status write_enable(const __flash_mem_handle * const handle) {
-    uint8_t opcode = FMDR_GET_OPCODE(WRITE_EN);
-    uint32_t err = 0;
 
-    FMDR_SELECT_CHIP();
-
-    err = FMDR_WRITE_DATA(&opcode, 1);
-
-    if (err || FMDR_IS_SPI_BUSY()) {
-        FMDR_RETURN_ERROR(FMDR_ERROR);
-    }
-
-    FMDR_DESELECT_CHIP();
-
-    return FMDR_OK;
-}
+static __flash_mem_op_status write_enable(const __flash_mem_handle * const handle);
+static __flash_mem_op_status flash_mem_read_sreg(const __flash_mem_handle * const handle, uint8_t * sreg);
 
 
-/**
- *  * Public API.
- * Read the status register
- * Byte1:
- *  0b - WIP(BUSY)
- *  1b - WEL
- *  2b..7b - see datasheet on your chip
- *
- * @param handle - pointer on management structure with low level API
- * @param sreg - pointer on sreg byte
- * @return status operation
- */
 __flash_mem_op_status
-flash_mem_read_sreg(const __flash_mem_handle * const handle, uint8_t * sreg) {
-    uint8_t opcode = FMDR_GET_OPCODE(READ_SREG);
-    uint32_t err = 0;
-
-    FMDR_SELECT_CHIP();
-
-    err = FMDR_WRITE_DATA(&opcode, 1);
-
-    if (err || FMDR_IS_SPI_BUSY()) {
-        FMDR_RETURN_ERROR(FMDR_ERROR);
-    }
-
-    err = FMDR_READ_DATA(sreg, 1);
-
-    if (err || FMDR_IS_SPI_BUSY()) {
-        FMDR_RETURN_ERROR(FMDR_ERROR);
-    }
-
-    FMDR_DESELECT_CHIP();
-
-    return FMDR_OK;
-}
-
-
-/**
- * Public API.
- * Read the flash chip info.
- *
- * @param handle - pointer on management structure with low level API
- * @param info - pointer on "__flash_mem_info" when will be stored information
- * @return status operation
- */
-__flash_mem_op_status
-flash_mem_read_info(const __flash_mem_handle * const handle, __flash_mem_info *info) {
+flash_mem_read_info(const __flash_mem_handle * const handle, __flash_mem_info *info)
+{
     uint8_t opcode = FMDR_GET_OPCODE(READ_CHIP_ID);
     uint32_t err = 0;
 
@@ -116,17 +53,9 @@ flash_mem_read_info(const __flash_mem_handle * const handle, __flash_mem_info *i
     return FMDR_OK;
 }
 
-
-/**
- * Public API.
- * Read a data from flash mem.
- *
- * @param handle - pointer on management structure with low level API
- * @param rdata - pointer on "__flash_mem_data"
- * @return status operation
- */
 __flash_mem_op_status
-flash_mem_read_data(const __flash_mem_handle * const handle, __flash_mem_data *rdata) {
+flash_mem_read_data(const __flash_mem_handle * const handle, __flash_mem_data *rdata)
+{
     uint8_t wbuf[4];
     uint32_t err = 0;
 
@@ -159,16 +88,9 @@ flash_mem_read_data(const __flash_mem_handle * const handle, __flash_mem_data *r
 }
 
 
-/**
- * Public API.
- * Write a data in the flash mem. The block of data can't be more the page size.
- *
- * @param handle - pointer on management structure with low level API
- * @param wdata - pointer on "__flash_mem_data"
- * @return status operation
- */
 __flash_mem_op_status
-flash_mem_write_page_data(const __flash_mem_handle * const handle, __flash_mem_data *wdata) {
+flash_mem_write_page_data(const __flash_mem_handle * const handle, __flash_mem_data *wdata)
+{
     uint32_t err = 0;
     uint8_t sreg;
 
@@ -224,16 +146,10 @@ flash_mem_write_page_data(const __flash_mem_handle * const handle, __flash_mem_d
 }
 
 
-/**
- * Public API.
- * Erase sector.
- *
- * @param handle - pointer on management structure with low level API
- * @param faddr - any address inside of selected sector
- * @return status operation
- */
+
 __flash_mem_op_status
-flash_mem_sector_erase(const __flash_mem_handle * const handle, const __flash_mem_address faddr) {
+flash_mem_sector_erase(const __flash_mem_handle * const handle, const __flash_mem_address faddr)
+{
     uint32_t err = 0;
     uint8_t sreg;
     uint8_t wbuf[4];
@@ -283,16 +199,9 @@ flash_mem_sector_erase(const __flash_mem_handle * const handle, const __flash_me
 }
 
 
-/**
- * Public API.
- * Erase block32k.
- *
- * @param handle - pointer on management structure with low level API
- * @param faddr - any address inside of selected block
- * @return status operation
- */
 __flash_mem_op_status
-flash_mem_block32_erase(const __flash_mem_handle * const handle, const __flash_mem_address faddr) {
+flash_mem_block32_erase(const __flash_mem_handle * const handle, const __flash_mem_address faddr)
+{
     uint32_t err = 0;
     uint8_t sreg;
     uint8_t wbuf[4];
@@ -342,16 +251,9 @@ flash_mem_block32_erase(const __flash_mem_handle * const handle, const __flash_m
 }
 
 
-/**
- * Public API.
- * Erase block64k.
- *
- * @param handle - pointer on management structure with low level API
- * @param faddr - any address inside of selected block
- * @return status operation
- */
 __flash_mem_op_status
-flash_mem_block64_erase(const __flash_mem_handle * const handle, const __flash_mem_address faddr) {
+flash_mem_block64_erase(const __flash_mem_handle * const handle, const __flash_mem_address faddr)
+{
     uint32_t err = 0;
     uint8_t sreg;
     uint8_t wbuf[4];
@@ -401,15 +303,9 @@ flash_mem_block64_erase(const __flash_mem_handle * const handle, const __flash_m
 }
 
 
-/**
- * Public API.
- * Erase chip.
- *
- * @param handle - pointer on management structure with low level API
- * @return status operation
- */
 __flash_mem_op_status
-flash_mem_chip_erase(const __flash_mem_handle * const handle) {
+flash_mem_chip_erase(const __flash_mem_handle * const handle)
+{
     uint8_t opcode = FMDR_GET_OPCODE(CHIP_ERASE);
     uint32_t err = 0;
     uint8_t sreg;
@@ -445,6 +341,68 @@ flash_mem_chip_erase(const __flash_mem_handle * const handle) {
     if (err) {
         return err;
     }
+
+    return FMDR_OK;
+}
+
+
+/**
+ * @brief Read the status register
+ *        Byte1:
+ *          0b - WIP(BUSY)
+ *          1b - WEL
+ *          2b..7b - see datasheet on your chip
+ *
+ * @param handle - pointer on management structure with low level API
+ * @param sreg - pointer on sreg byte
+ * @return status operation
+ */
+static __flash_mem_op_status
+flash_mem_read_sreg(const __flash_mem_handle * const handle, uint8_t * sreg)
+{
+    uint8_t opcode = FMDR_GET_OPCODE(READ_SREG);
+    uint32_t err = 0;
+
+    FMDR_SELECT_CHIP();
+
+    err = FMDR_WRITE_DATA(&opcode, 1);
+
+    if (err || FMDR_IS_SPI_BUSY()) {
+        FMDR_RETURN_ERROR(FMDR_ERROR);
+    }
+
+    err = FMDR_READ_DATA(sreg, 1);
+
+    if (err || FMDR_IS_SPI_BUSY()) {
+        FMDR_RETURN_ERROR(FMDR_ERROR);
+    }
+
+    FMDR_DESELECT_CHIP();
+
+    return FMDR_OK;
+}
+
+
+/**
+ * @brief Turn off write memory protection.
+ *
+ * @param handle - pointer on management structure with low level API
+ * @return status operation
+ */
+static __flash_mem_op_status write_enable(const __flash_mem_handle * const handle)
+{
+    uint8_t opcode = FMDR_GET_OPCODE(WRITE_EN);
+    uint32_t err = 0;
+
+    FMDR_SELECT_CHIP();
+
+    err = FMDR_WRITE_DATA(&opcode, 1);
+
+    if (err || FMDR_IS_SPI_BUSY()) {
+        FMDR_RETURN_ERROR(FMDR_ERROR);
+    }
+
+    FMDR_DESELECT_CHIP();
 
     return FMDR_OK;
 }

@@ -10,6 +10,9 @@
  * Private useful macros
  *
  */
+#define  BLOCK64_SIZE                     0xffff
+#define  BLOCK32_SIZE                     0x7fff
+
 #define  FML_MEM_SIZE(fml)                ((fml)->descriptor->MEM_VOLUME)
 #define  FML_EXTADDR_TO_HWADDR(fml,ea)    ((fml)->descriptor->START_ADDRESS + (ea))
 #define  FML_GET_WRITE_DATALEN(fml,a)     (((((a) / (fml)->descriptor->fmh->descriptor->PAGE_SIZE) + 1) \
@@ -19,24 +22,44 @@
 #define  FML_IS_NEW_SECTOR(fml,a)         (((a) % (fml)->descriptor->fmh->descriptor->SECTOR_SIZE) ? 1 : 0)
 #define  FML_GET_SPACE_TO_END(fml,a)      (((a) < (fml)->descriptor->MEM_VOLUME) ? ((fml)->descriptor->MEM_VOLUME - (a)) : 0)
 
-#define  FML_IS_ALIGN_BY_64K()            ((fml->descriptor->START_ADDRESS % fml->descriptor->fmh->descriptor->BLOCK64_SIZE) ? 0 : 1)
-#define  FML_IS_ALIGN_BY_32K()            ((fml->descriptor->START_ADDRESS % fml->descriptor->fmh->descriptor->BLOCK32_SIZE) ? 0 : 1)
+#define  FML_IS_ALIGN_BY_64K()            ((fml->descriptor->START_ADDRESS % BLOCK64_SIZE) ? 0 : 1)
+#define  FML_IS_ALIGN_BY_32K()            ((fml->descriptor->START_ADDRESS % BLOCK32_SIZE) ? 0 : 1)
 
+
+
+
+static __flash_mem_layer_status write_data(struct __fmem_layer * const fml, const __fmem_layer_data * const wdata);
+static __flash_mem_layer_status change_data(struct __fmem_layer * const fml, const __fmem_layer_data * const wdata);
+static __flash_mem_layer_status read_data(struct __fmem_layer * const fml, const __fmem_layer_data * const rdata);
+static __flash_mem_layer_status erase_memory(struct __fmem_layer * const fml);
+
+
+
+
+void create_fmemlayer(__fmem_layer * const fml, const __fmem_layer_descriptor * const descriptor)
+{
+    fml->descriptor = descriptor;
+
+    /* interface */
+    fml->erase = erase_memory;
+    fml->read = read_data;
+    fml->change = change_data;
+    fml->write = write_data;
+}
 
 
 /**
- * Write a data to the flash mem.
+ * @brief Write a data to the flash mem.
  *
  * @param f - pointer on "__fmem_layer"
  * @param wdata - pointer on "__fmem_layer_data"
  */
-static __flash_mem_layer_status write_data(void * const f, const __fmem_layer_data * const wdata) {
+static __flash_mem_layer_status write_data(struct __fmem_layer * const fml, const __fmem_layer_data * const wdata)
+{
     uint32_t count_addr;
     uint32_t count_data;
     uint32_t err;
     __flash_mem_data fmdr_data;
-
-    __fmem_layer * const fml = (__fmem_layer *)f;
 
     if (!FML_IS_ADDR_IN_RANGE(fml, wdata->addr)) {
         return FML_ADDR_ERROR;
@@ -86,17 +109,17 @@ static __flash_mem_layer_status write_data(void * const f, const __fmem_layer_da
 
 
 /**
- * Write a data to the flash mem without erasing. It only changes bits from "1" to "0".
- * E.g. 0xFF is possible to change on 0x00 state, but it won't work vise versa.
+ * @brief Write a data to the flash mem without erasing.
+ *        It only changes bits from "1" to "0".
+ *        E.g. 0xFF is possible to change on 0x00 state, but it won't work vise versa.
  *
  * @param f - pointer on "__fmem_layer"
  * @param wdata - pointer on "__fmem_layer_data"
  */
-static __flash_mem_layer_status change_data(void * const f, const __fmem_layer_data * const wdata) {
+static __flash_mem_layer_status change_data(struct __fmem_layer * const fml, const __fmem_layer_data * const wdata)
+{
     uint32_t err;
     __flash_mem_data fmdr_data;
-
-    __fmem_layer * const fml = (__fmem_layer *)f;
 
     if (!FML_IS_ADDR_IN_RANGE(fml, wdata->addr)) {
         return FML_ADDR_ERROR;
@@ -127,16 +150,15 @@ static __flash_mem_layer_status change_data(void * const f, const __fmem_layer_d
 
 
 /**
- * Read a data from the flash mem.
+ * @brief Read a data from the flash mem.
  *
  * @param f - pointer on "__fmem_layer"
  * @param rdata - pointer on "__fmem_layer_data"
  */
-static __flash_mem_layer_status read_data(void * const f, const __fmem_layer_data * const rdata) {
+static __flash_mem_layer_status read_data(struct __fmem_layer * const fml, const __fmem_layer_data * const rdata)
+{
     uint32_t err;
     __flash_mem_data fmdr_data;
-
-    __fmem_layer * const fml = (__fmem_layer *)f;
 
     if (!FML_IS_ADDR_IN_RANGE(fml, rdata->addr)) {
         return FML_ADDR_ERROR;
@@ -161,22 +183,19 @@ static __flash_mem_layer_status read_data(void * const f, const __fmem_layer_dat
 
 
 /**
- * Erase all allocated volume of flash mem.
+ * @brief Erase all allocated volume of flash mem.
  *
  * @param f - pointer on "__fmem_layer"
  *
  */
-static __flash_mem_layer_status erase_memory(void * const f) {
+static __flash_mem_layer_status erase_memory(struct __fmem_layer * const fml)
+{
     uint32_t err;
     uint32_t iteration_addr = 0;
 
     __flash_mem_op_status (* erase_func) (const __flash_mem_handle * const, __flash_mem_address);
     __flash_mem_address fmdr_addr;
 
-    __fmem_layer * const fml = (__fmem_layer *)f;
-
-    const uint32_t block64k = fml->descriptor->fmh->descriptor->BLOCK64_SIZE;
-    const uint32_t block32k = fml->descriptor->fmh->descriptor->BLOCK32_SIZE;
     const uint32_t sector = fml->descriptor->fmh->descriptor->SECTOR_SIZE;
 
     const uint32_t align64k = FML_IS_ALIGN_BY_64K();
@@ -189,15 +208,15 @@ static __flash_mem_layer_status erase_memory(void * const f) {
         /* choose a block size */
         const uint32_t space_to_end = FML_GET_SPACE_TO_END(fml, iteration_addr);
 
-        if (align64k && space_to_end >= block64k) {
+        if (align64k && space_to_end >= BLOCK64_SIZE) {
 
             erase_func = &flash_mem_block64_erase;
-            iteration_addr += block64k;
+            iteration_addr += BLOCK64_SIZE;
 
-        } else if (align32k && space_to_end >= block32k) {
+        } else if (align32k && space_to_end >= BLOCK32_SIZE) {
 
             erase_func = &flash_mem_block32_erase;
-            iteration_addr += block32k;
+            iteration_addr += BLOCK32_SIZE;
 
         } else {
 
@@ -215,22 +234,5 @@ static __flash_mem_layer_status erase_memory(void * const f) {
     }
 
     return FML_OK;
-}
-
-/**
- * Performs an initialization of "__fmem_layer" structure.
- *
- * @param fml - pointer on "__fmem_layer" structure which need to initialize.
- * @param descriptor - pointer on "__fmem_layer_descriptor" structure which describes
- *                     allocated block of flash memory.
- */
-void create_fmemlayer(__fmem_layer * const fml, const __fmem_layer_descriptor * const descriptor) {
-    fml->descriptor = descriptor;
-
-    /* interface */
-    fml->erase = erase_memory;
-    fml->read = read_data;
-    fml->change = change_data;
-    fml->write = write_data;
 }
 

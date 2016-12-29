@@ -37,7 +37,7 @@ typedef enum {
 
 
 /**
- * Union that determines a address in the flash mem.
+ * @brief Union that determines a address in the flash mem.
  *
  * @field addr32 - address.
  * @field addr - four bytes of address
@@ -49,7 +49,7 @@ typedef union {
 
 
 /**
- * Determines a data what need to read or write in the flash memory.
+ * @brief Determines a data what need to read or write in the flash memory.
  *
  * @field faddr - address in the flash mem space.
  * @field len - length of data
@@ -72,7 +72,7 @@ typedef struct {
 
 
 /**
- * Determines opcodes of the flash memory.
+ * Determines opcodes of flash memory.
  *
  */
 typedef struct {
@@ -92,15 +92,13 @@ typedef struct {
 
 
 /**
- * Descriptor of the flash memory.
+ * Descriptor of flash memory.
  *
  */
 typedef struct {
     const uint32_t FLASH_MEM_VOLUME;
     const uint32_t PAGE_SIZE;
     const uint32_t SECTOR_SIZE;
-    const uint32_t BLOCK32_SIZE;
-    const uint32_t BLOCK64_SIZE;
 
     const uint16_t DEVICE_ID_LENGHT;
     const uint16_t PAGE_WRITE_TIMEOUT_US;
@@ -112,7 +110,7 @@ typedef struct {
 
 
 /**
- * Contains implementation of low level spi api.
+ * @brief Contains implementation of low level spi api.
  *
  * @field select - set CS pin to low state
  * @field deselect - set CS pin to high state
@@ -130,6 +128,7 @@ typedef struct {
     uint32_t (* delay)(const uint32_t delay);
 } __flash_mem_api;
 
+
 /**
  * Management structure
  */
@@ -142,16 +141,81 @@ typedef struct {
 } __flash_mem_handle;
 
 
+
+
 /**
- * Public API functions
+ * @brief Public API.
+ *        Read the flash chip info.
+ *
+ * @param handle - pointer on management structure with low level API
+ * @param info - pointer on "__flash_mem_info" when will be stored information
+ * @return status operation
  */
-__flash_mem_op_status flash_mem_read_sreg(const __flash_mem_handle * const handle, uint8_t *sreg);
 __flash_mem_op_status flash_mem_read_info(const __flash_mem_handle * const handle, __flash_mem_info *info);
+
+
+/**
+ * @brief Public API.
+ *        Read a data from flash mem.
+ *
+ * @param handle - pointer on management structure with low level API
+ * @param rdata - pointer on "__flash_mem_data"
+ * @return status operation
+ */
 __flash_mem_op_status flash_mem_read_data(const __flash_mem_handle * const handle, __flash_mem_data *rdata);
+
+
+/**
+ * @brief Public API.
+ *        Write a data in the flash mem. The block of data can't be more the page size.
+ *
+ * @param handle - pointer on management structure with low level API
+ * @param wdata - pointer on "__flash_mem_data"
+ * @return status operation
+ */
 __flash_mem_op_status flash_mem_write_page_data(const __flash_mem_handle * const handle, __flash_mem_data *wdata);
+
+
+/**
+ * @brief Public API.
+ *        Erase sector.
+ *
+ * @param handle - pointer on management structure with low level API
+ * @param faddr - any address inside of selected sector
+ * @return status operation
+ */
 __flash_mem_op_status flash_mem_sector_erase(const __flash_mem_handle * const handle, const __flash_mem_address faddr);
+
+
+/**
+ * @brief Public API.
+ *        Erase block32k.
+ *
+ * @param handle - pointer on management structure with low level API
+ * @param faddr - any address inside of selected block
+ * @return status operation
+ */
 __flash_mem_op_status flash_mem_block32_erase(const __flash_mem_handle * const handle, const __flash_mem_address faddr);
+
+
+/**
+ * @brief Public API.
+ *        Erase block64k.
+ *
+ * @param handle - pointer on management structure with low level API
+ * @param faddr - any address inside of selected block
+ * @return status operation
+ */
 __flash_mem_op_status flash_mem_block64_erase(const __flash_mem_handle * const handle, const __flash_mem_address faddr);
+
+
+/**
+ * @brief Public API.
+ *        Erase chip.
+ *
+ * @param handle - pointer on management structure with low level API
+ * @return status operation
+ */
 __flash_mem_op_status flash_mem_chip_erase(const __flash_mem_handle * const handle);
 
 

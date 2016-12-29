@@ -18,26 +18,41 @@
  *
  * !!! Be carefully with race conditions.
  */
-typedef struct {
+
+
+typedef struct __ringbuf {
     uint8_t * data;
     uint16_t sz;
-    
+
     uint16_t tile;
     uint16_t head;
-    
+
     /* interface */
-    void (* reset)(void * const r);
-    void (* put)(void * const r, const uint8_t c);
-    uint8_t (* get)(void * const r);
-    uint16_t (* size)(void * const r);
+    void (* reset)(struct __ringbuf * const r);
+    void (* put)(struct __ringbuf * const r, const uint8_t c);
+    uint8_t (* get)(struct __ringbuf * const r);
+    uint16_t (* size)(struct __ringbuf * const r);
 } __ringbuf;
 
 
+/**
+ * @brief Public API macros
+ *
+ * @param r - pinter on the __ringbuf
+ */
 #define size_ringbuf(r)    r.size(&r)
 #define reset_ringbuf(r)   r.reset(&r)
 #define put_ringbuf(r,c)   r.put(&r,c)
 #define get_ringbuf(r)     r.get(&r)
 
+
+/**
+ * @brief Initialize new ring buffer
+ *
+ * @param r - pinter on the __ringbuf struct
+ * @param data - pointer on data buffer
+ * @param size - size of buffer
+ */
 void init_ringbuf(__ringbuf * const r, uint8_t * const data, const uint16_t size);
 
 
