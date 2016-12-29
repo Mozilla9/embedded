@@ -2,7 +2,8 @@
 
 Simple terminal lib that allows to connect debug command interface to your board.
 
-#### Example how use it
+
+**How to use it**
 
 
 ```
