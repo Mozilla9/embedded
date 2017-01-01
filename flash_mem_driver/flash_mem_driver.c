@@ -265,6 +265,8 @@ flash_mem_block32_erase(const __flash_mem_handle * const handle, const __flash_m
         FMDR_RETURN_ERROR(FMDR_ERROR);
     }
 
+    FMDR_DESELECT_CHIP();
+
     /* check on busy */
     while(1) {
         err = flash_mem_read_sreg(handle, &sreg);
@@ -283,8 +285,6 @@ flash_mem_block32_erase(const __flash_mem_handle * const handle, const __flash_m
             break;
         }
     }
-
-    FMDR_DESELECT_CHIP();
 
     return FMDR_OK;
 }
