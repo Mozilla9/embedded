@@ -52,6 +52,7 @@ void init_dbg_terminal(void)
 {
     create_sterminal(&dbg_terminal, &descriptor, &stbuffer);
 }
+
 ```
 
 2. put chars from your uart to the terminal
