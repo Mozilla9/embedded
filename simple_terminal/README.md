@@ -5,6 +5,9 @@ Simple terminal lib that allows to connect debug command interface to your board
 
 **How to use it**
 
+
+1. initialization
+
 ```
 
 /* Callback for the command 'ferase' */
@@ -49,3 +52,12 @@ void init_dbg_terminal(void)
 {
     create_sterminal(&dbg_terminal, &descriptor, &stbuffer);
 }
+```
+
+2. put chars from your uart to the terminal
+
+```
+
+DEBUG_TERMINAL_SEND(&dbg_terminal, input_char);
+
+```
