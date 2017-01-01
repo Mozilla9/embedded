@@ -16,8 +16,8 @@
 #define FMDR_GET_OPCODE(OPCODE)      handle->opcodes->OPCODE
 #define FMDR_WRITE_DATA(buff,len)    handle->api->spi_write((buff),(len))
 #define FMDR_READ_DATA(buff,len)     handle->api->spi_read((buff),(len))
-#define FMDR_DELAY(dl)               handle->api->delay(dl)
-#define FMDR_RETURN_ERROR(err)       {FMDR_DESELECT_CHIP(); return (err);}
+#define FMDR_DELAY(dl)               handle->api->delay((dl))
+#define FMDR_RETURN_ERROR(err)       FMDR_DESELECT_CHIP(); return (err)
 
 #define FMDR_CHECK_CHIP_BUSY(s)      ((s)&0x01)
 #define FMDR_CHECK_CHIP_WEL(s)       ((s)&0x02)
@@ -136,10 +136,23 @@ flash_mem_write_page_data(const __flash_mem_handle * const handle, __flash_mem_d
 
     FMDR_DESELECT_CHIP();
 
-    err = FMDR_DELAY(handle->descriptor->PAGE_WRITE_TIMEOUT_US);
+    /* check on busy */
+    while(1) {
+        err = flash_mem_read_sreg(handle, &sreg);
 
-    if (err) {
-        return err;
+        if (err) {
+            return err;
+        }
+
+        if (FMDR_CHECK_CHIP_BUSY(sreg)) {
+            err = FMDR_DELAY(handle->descriptor->PAGE_WRITE_TIMEOUT_US);
+
+            if (err) {
+                return err;
+            }
+        } else {
+            break;
+        }
     }
 
     return FMDR_OK;
@@ -189,10 +202,23 @@ flash_mem_sector_erase(const __flash_mem_handle * const handle, const __flash_me
 
     FMDR_DESELECT_CHIP();
 
-    err = FMDR_DELAY(handle->descriptor->SECTOR_ERASE_TIMEOUT_MS * 1000);
+    /* check on busy */
+    while(1) {
+        err = flash_mem_read_sreg(handle, &sreg);
 
-    if (err) {
-        return err;
+        if (err) {
+            return err;
+        }
+
+        if (FMDR_CHECK_CHIP_BUSY(sreg)) {
+            err = FMDR_DELAY(handle->descriptor->SECTOR_ERASE_TIMEOUT_MS * 1000);
+
+            if (err) {
+                return err;
+            }
+        } else {
+            break;
+        }
     }
 
     return FMDR_OK;
@@ -239,10 +265,23 @@ flash_mem_block32_erase(const __flash_mem_handle * const handle, const __flash_m
         FMDR_RETURN_ERROR(FMDR_ERROR);
     }
 
-    err = FMDR_DELAY(handle->descriptor->BLOCK32_ERASE_TIMEOUT_MS * 1000);
+    /* check on busy */
+    while(1) {
+        err = flash_mem_read_sreg(handle, &sreg);
 
-    if (err) {
-        return err;
+        if (err) {
+            return err;
+        }
+
+        if (FMDR_CHECK_CHIP_BUSY(sreg)) {
+            err = FMDR_DELAY(handle->descriptor->BLOCK32_ERASE_TIMEOUT_MS * 1000);
+
+            if (err) {
+                return err;
+            }
+        } else {
+            break;
+        }
     }
 
     FMDR_DESELECT_CHIP();
@@ -293,10 +332,23 @@ flash_mem_block64_erase(const __flash_mem_handle * const handle, const __flash_m
 
     FMDR_DESELECT_CHIP();
 
-    err = FMDR_DELAY(handle->descriptor->BLOCK64_ERASE_TIMEOUT_MS * 1000);
+    /* check on busy */
+    while(1) {
+        err = flash_mem_read_sreg(handle, &sreg);
 
-    if (err) {
-        return err;
+        if (err) {
+            return err;
+        }
+
+        if (FMDR_CHECK_CHIP_BUSY(sreg)) {
+            err = FMDR_DELAY(handle->descriptor->BLOCK64_ERASE_TIMEOUT_MS * 1000);
+
+            if (err) {
+                return err;
+            }
+        } else {
+            break;
+        }
     }
 
     return FMDR_OK;
@@ -336,10 +388,23 @@ flash_mem_chip_erase(const __flash_mem_handle * const handle)
 
     FMDR_DESELECT_CHIP();
 
-    err = FMDR_DELAY(handle->descriptor->CHIP_ERASE_TIMEOUT_MS * 1000);
+    /* check on busy */
+    while(1) {
+        err = flash_mem_read_sreg(handle, &sreg);
 
-    if (err) {
-        return err;
+        if (err) {
+            return err;
+        }
+
+        if (FMDR_CHECK_CHIP_BUSY(sreg)) {
+            err = FMDR_DELAY(handle->descriptor->CHIP_ERASE_TIMEOUT_MS * 1000);
+
+            if (err) {
+                return err;
+            }
+        } else {
+            break;
+        }
     }
 
     return FMDR_OK;
