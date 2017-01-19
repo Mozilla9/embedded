@@ -100,6 +100,11 @@ typedef struct {
     const uint32_t PAGE_SIZE;
     const uint32_t SECTOR_SIZE;
 
+    /**
+     * If enabled, the write-buff should contains four empty bytes before data bytes
+     */
+    const uint32_t FAST_WRITE_EN;
+
     const uint16_t DEVICE_ID_LENGHT;
     const uint16_t PAGE_WRITE_TIMEOUT_US;
     const uint16_t SECTOR_ERASE_TIMEOUT_MS;

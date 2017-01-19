@@ -121,14 +121,34 @@ flash_mem_write_page_data(const __flash_mem_handle * const handle, __flash_mem_d
         }
     }
 
-    wdata->buf[0] = FMDR_GET_OPCODE(PAGE_PROGRAM);
-    wdata->buf[1] = wdata->faddr.addr[2];
-    wdata->buf[2] = wdata->faddr.addr[1];
-    wdata->buf[3] = wdata->faddr.addr[0];
+    /* fast write support */
+    if (handle->descriptor->FAST_WRITE_EN) {
 
-    FMDR_SELECT_CHIP();
+        wdata->buf[0] = FMDR_GET_OPCODE(PAGE_PROGRAM);
+        wdata->buf[1] = wdata->faddr.addr[2];
+        wdata->buf[2] = wdata->faddr.addr[1];
+        wdata->buf[3] = wdata->faddr.addr[0];
 
-    err = FMDR_WRITE_DATA(wdata->buf, wdata->len + 4);
+        FMDR_SELECT_CHIP();
+
+    } else {
+        uint8_t wbuf[4];
+
+        wbuf[0] = FMDR_GET_OPCODE(PAGE_PROGRAM);
+        wbuf[1] = wdata->faddr.addr[2];
+        wbuf[2] = wdata->faddr.addr[1];
+        wbuf[3] = wdata->faddr.addr[0];
+
+        FMDR_SELECT_CHIP();
+
+        err = FMDR_WRITE_DATA(wbuf, 4);
+
+        if (err || FMDR_IS_SPI_BUSY()) {
+            FMDR_RETURN_ERROR(FMDR_ERROR);
+        }
+    }
+
+    err = FMDR_WRITE_DATA(wdata->buf, wdata->len + (handle->descriptor->FAST_WRITE_EN ? 4 : 0));
 
     if (err || FMDR_IS_SPI_BUSY()) {
         FMDR_RETURN_ERROR(FMDR_ERROR);
@@ -157,7 +177,6 @@ flash_mem_write_page_data(const __flash_mem_handle * const handle, __flash_mem_d
 
     return FMDR_OK;
 }
-
 
 
 __flash_mem_op_status
