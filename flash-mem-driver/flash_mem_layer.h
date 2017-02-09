@@ -30,10 +30,10 @@
  * @param fml - pointer to the "__fmem_layer" structure
  * @param d - pointer to the "__fmem_layer_data" structure
  */
-#define FMEM_ERASE(fml)          (fml)->erase((fml))
-#define FMEM_READ(fml,d)         (fml)->read((fml),(d))
-#define FMEM_CHANGE(fml,d)       (fml)->change((fml),(d))
-#define FMEM_WRITE(fml,d)        (fml)->write((fml),(d))
+#define FMEM_ERASE(fml)          fmem_erase_memory((fml))
+#define FMEM_READ(fml,d)         fmem_read_data((fml),(d))
+#define FMEM_CHANGE(fml,d)       fmem_change_data((fml),(d))
+#define FMEM_WRITE(fml,d)        fmem_write_data((fml),(d))
 
 
 
@@ -72,8 +72,8 @@ typedef struct {
  * @field fmh - pointer on the "__flash_mem_handle" (low level driver implementation).
  */
 typedef struct {
-    const uint32_t START_ADDRESS;
-    const uint32_t MEM_VOLUME;
+    uint32_t START_ADDRESS;
+    uint32_t MEM_VOLUME;
     const __flash_mem_handle * const fmh;
 } __fmem_layer_descriptor;
 
@@ -85,14 +85,7 @@ typedef struct {
  */
 typedef struct __fmem_layer {
     const __fmem_layer_descriptor * descriptor;
-
-    /**
-     * interface
-     */
-    __flash_mem_layer_status (* erase)(struct __fmem_layer * const);
-    __flash_mem_layer_status (* read)(struct __fmem_layer * const, const __fmem_layer_data * const);
-    __flash_mem_layer_status (* write)(struct __fmem_layer * const, const __fmem_layer_data * const);
-    __flash_mem_layer_status (* change)(struct __fmem_layer * const, const __fmem_layer_data * const);
+    
 } __fmem_layer;
 
 
@@ -104,6 +97,45 @@ typedef struct __fmem_layer {
  *                     allocated block of flash memory.
  */
 void create_fmemlayer(__fmem_layer * const fml, const __fmem_layer_descriptor * const descriptor);
+
+
+/**
+ * @brief Write a data to the flash mem.
+ *
+ * @param f - pointer on "__fmem_layer"
+ * @param wdata - pointer on "__fmem_layer_data"
+ */
+__flash_mem_layer_status fmem_write_data(struct __fmem_layer * const fml, const __fmem_layer_data * const wdata);
+
+
+/**
+ * @brief Write a data to the flash mem without erasing.
+ *        It only changes bits from "1" to "0".
+ *        E.g. 0xFF is possible to change on 0x00 state, but it won't work vise versa.
+ *
+ * @param f - pointer on "__fmem_layer"
+ * @param wdata - pointer on "__fmem_layer_data"
+ */
+__flash_mem_layer_status fmem_change_data(struct __fmem_layer * const fml, const __fmem_layer_data * const wdata);
+
+
+/**
+ * @brief Read a data from the flash mem.
+ *
+ * @param f - pointer on "__fmem_layer"
+ * @param rdata - pointer on "__fmem_layer_data"
+ */
+__flash_mem_layer_status fmem_read_data(struct __fmem_layer * const fml, const __fmem_layer_data * const rdata);
+
+
+/**
+ * @brief Erase all allocated volume of flash mem.
+ *
+ * @param f - pointer on "__fmem_layer"
+ *
+ */
+__flash_mem_layer_status fmem_erase_memory(struct __fmem_layer * const fml);
+
 
 
 #endif /* __FLASH_MEM_LAYER_H */

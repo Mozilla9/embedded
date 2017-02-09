@@ -99,12 +99,15 @@ typedef struct {
     const uint32_t FLASH_MEM_VOLUME;
     const uint32_t PAGE_SIZE;
     const uint32_t SECTOR_SIZE;
-
+    
     /**
-     * If enabled, the write-buff should contains four empty bytes before data bytes
+     * If enabled, the write buffer should contains 4 empty leading
+     * bytes before data bytes.
+     * The flash_mem's driver puts opcode+address in this area.
+     * Writing to flash memory will be performed by one transaction instead two.
      */
     const uint32_t FAST_WRITE_EN;
-
+    
     const uint16_t DEVICE_ID_LENGHT;
     const uint16_t PAGE_WRITE_TIMEOUT_US;
     const uint16_t SECTOR_ERASE_TIMEOUT_MS;
@@ -125,7 +128,7 @@ typedef struct {
  * @field delay - hw delay, usec
  */
 typedef struct {
-    void ( *select)(void);
+    void (* select)(void);
     void (* deselect)(void);
     uint32_t (* is_spi_busy)(void);
     uint32_t (* spi_write)(const uint8_t *wbuf, const uint32_t len);
@@ -138,11 +141,11 @@ typedef struct {
  * Management structure
  */
 typedef struct {
-
+    
     const __flash_mem_descriptor * const descriptor;
     const __flash_mem_opcodes * const opcodes;
     const __flash_mem_api * const api;
-
+    
 } __flash_mem_handle;
 
 
