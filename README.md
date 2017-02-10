@@ -1,2 +1,2 @@
-# embedded
+# embedded kit
 Several embedded libs
